@@ -53,7 +53,7 @@ export const DEFAULTS = {
 };
 
 export const API_ENDPOINTS = {
-  CONFIG: 'functions/api/config',
+  CONFIG: '/api/config',
 };
 
 export const ADD_RULE_BUTTON_TEXT = 'Add New Rule';

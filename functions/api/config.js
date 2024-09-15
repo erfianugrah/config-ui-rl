@@ -1,4 +1,5 @@
-export async function onRequestGet({ env }) {
+export async function onRequestGet(context) {
+  const { env } = context;
   const configStorageId = env.CONFIG_STORAGE.idFromName('global');
   const configStorage = env.CONFIG_STORAGE.get(configStorageId);
 
@@ -8,7 +9,8 @@ export async function onRequestGet({ env }) {
   });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { env, request } = context;
   const configStorageId = env.CONFIG_STORAGE.idFromName('global');
   const configStorage = env.CONFIG_STORAGE.get(configStorageId);
 
