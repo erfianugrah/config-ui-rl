@@ -7,7 +7,7 @@ export class ConfigStorage {
   async fetch(request) {
     const url = new URL(request.url);
 
-    if (url.pathname === '/api/config') {
+    if (url.pathname === '/config') {
       if (request.method === 'GET') {
         return await this.getConfig();
       } else if (request.method === 'POST') {
