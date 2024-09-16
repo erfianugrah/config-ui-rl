@@ -17,6 +17,13 @@
   function deleteRule() {
     dispatch('delete', { index });
   }
+
+  onMount(() => {
+    const element = document.querySelector(`[data-id="${index}"]`);
+    if (element) {
+      element.setAttribute('draggable', 'true');
+    }
+  });
 </script>
 
 <div class="bg-white shadow-md rounded px-6 py-4 mb-4 cursor-move transition-all duration-200 hover:shadow-lg" data-id={index}>

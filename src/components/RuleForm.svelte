@@ -19,7 +19,7 @@
   }
 
   function addCondition() {
-    rule.requestMatch.conditions = [...rule.requestMatch.conditions, { type: 'single' }];
+    rule.requestMatch.conditions = [...rule.requestMatch.conditions, { type: 'single', conditions: [{}] }];
   }
 
   function addConditionGroup() {
