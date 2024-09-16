@@ -28,7 +28,7 @@ import { ADD_RULE_BUTTON_TEXT } from '../lib/config-variables';
 
 <div id="viewRuleModal" class="hidden">
   <ViewRuleModal client:idle rule={null} onClose={() => {
-    document.getElementById('viewRuleModal').classList.add('hidden');
+    document.getElementById('viewRuleModal')?.classList.add('hidden');
   }} />
 </div>
 
@@ -38,7 +38,23 @@ import { ADD_RULE_BUTTON_TEXT } from '../lib/config-variables';
 <script>
   import { loadConfiguration, saveConfiguration } from '../lib/config-utils';
 
-  let currentRules = [];
+  interface SaveEvent extends CustomEvent {
+    detail: { rule: any; index?: number };
+  }
+
+  interface ViewEvent extends CustomEvent {
+    detail: { rule: any };
+  }
+
+  interface EditEvent extends CustomEvent {
+    detail: { rule: any; index: number };
+  }
+
+  interface DeleteEvent extends CustomEvent {
+    detail: { index: number };
+  }
+
+  let currentRules: any[] = [];
 
   async function initializeConfig() {
     try {
@@ -49,31 +65,35 @@ import { ADD_RULE_BUTTON_TEXT } from '../lib/config-variables';
       updateRuleModals();
     } catch (error) {
       console.error('Error initializing configuration:', error);
-      showError(error.message);
+      showError(error instanceof Error ? error.message : String(error));
     }
   }
 
-  function showError(message) {
+  function showError(message: string) {
     console.error('Showing error:', message);
     const errorElement = document.getElementById('error-message');
     const errorTextElement = document.getElementById('error-text');
-    errorTextElement.textContent = message;
-    errorElement.classList.remove('hidden');
+    if (errorElement && errorTextElement) {
+      errorTextElement.textContent = message;
+      errorElement.classList.remove('hidden');
+    }
   }
 
   function updateRuleModals() {
     console.log('Updating rule modals...');
     const container = document.getElementById('ruleModals');
-    container.innerHTML = '';
-    currentRules.forEach((rule, index) => {
-      console.log(`Creating rule modal for rule ${index}:`, rule);
-      const ruleModal = document.createElement('astro-island');
-      ruleModal.setAttribute('component-url', '/src/components/RuleModal.svelte');
-      ruleModal.setAttribute('component-export', 'default');
-      ruleModal.setAttribute('renderer-url', '/src/renderers/svelte.js');
-      ruleModal.setAttribute('props', JSON.stringify({ rule, index }));
-      container.appendChild(ruleModal);
-    });
+    if (container) {
+      container.innerHTML = '';
+      currentRules.forEach((rule, index) => {
+        console.log(`Creating rule modal for rule ${index}:`, rule);
+        const ruleModal = document.createElement('astro-island');
+        ruleModal.setAttribute('component-url', '/src/components/RuleModal.svelte');
+        ruleModal.setAttribute('component-export', 'default');
+        ruleModal.setAttribute('renderer-url', '/src/renderers/svelte.js');
+        ruleModal.setAttribute('props', JSON.stringify({ rule, index }));
+        container.appendChild(ruleModal);
+      });
+    }
     console.log('Rule modals updated');
   }
 
@@ -82,14 +102,14 @@ import { ADD_RULE_BUTTON_TEXT } from '../lib/config-variables';
     initializeConfig();
   });
 
-  document.getElementById('addNewRule').addEventListener('click', () => {
+  document.getElementById('addNewRule')?.addEventListener('click', () => {
     console.log('Add New Rule button clicked');
-    document.getElementById('ruleModals').classList.add('hidden');
-    document.getElementById('addNewRule').classList.add('hidden');
-    document.getElementById('configForm').classList.remove('hidden');
+    document.getElementById('ruleModals')?.classList.add('hidden');
+    document.getElementById('addNewRule')?.classList.add('hidden');
+    document.getElementById('configForm')?.classList.remove('hidden');
   });
 
-  document.addEventListener('save', async (event) => {
+  document.addEventListener('save', async (event: SaveEvent) => {
     console.log('Save event received:', event.detail);
     const { rule, index } = event.detail;
     
@@ -107,40 +127,45 @@ import { ADD_RULE_BUTTON_TEXT } from '../lib/config-variables';
       updateRuleModals();
     } catch (error) {
       console.error('Error saving configuration:', error);
-      showError(error.message);
+      showError(error instanceof Error ? error.message : String(error));
     }
   });
 
-  function showMessage(message) {
+  function showMessage(message: string) {
     console.log('Showing message:', message);
     const messageElement = document.getElementById('message');
-    messageElement.textContent = message;
-    messageElement.classList.remove('hidden');
+    if (messageElement) {
+      messageElement.textContent = message;
+      messageElement.classList.remove('hidden');
+    }
   }
 
-  // View, edit, and delete event listeners
-document.addEventListener('view', (event) => {
-  const { rule } = event.detail;
-  const viewModal = document.getElementById('viewRuleModal');
-  const viewModalComponent = viewModal.querySelector('astro-island');
-  viewModalComponent.setAttribute('props', JSON.stringify({ 
-    rule, 
-    onClose: () => viewModal.classList.add('hidden') 
-  }));
-  viewModal.classList.remove('hidden');
-});
-
-  document.addEventListener('edit', (event) => {
-    const { rule, index } = event.detail;
-    document.getElementById('ruleModals').classList.add('hidden');
-    document.getElementById('addNewRule').classList.add('hidden');
-    const configForm = document.getElementById('configForm');
-    configForm.classList.remove('hidden');
-    configForm.querySelector('astro-island').setAttribute('rule', JSON.stringify(rule));
-    configForm.querySelector('astro-island').setAttribute('index', index);
+  document.addEventListener('view', (event: ViewEvent) => {
+    const { rule } = event.detail;
+    const viewModal = document.getElementById('viewRuleModal');
+    const viewModalComponent = viewModal?.querySelector('astro-island');
+    if (viewModalComponent) {
+      viewModalComponent.setAttribute('props', JSON.stringify({ 
+        rule, 
+        onClose: () => viewModal?.classList.add('hidden') 
+      }));
+    }
+    viewModal?.classList.remove('hidden');
   });
 
-  document.addEventListener('delete', async (event) => {
+  document.addEventListener('edit', (event: EditEvent) => {
+    const { rule, index } = event.detail;
+    document.getElementById('ruleModals')?.classList.add('hidden');
+    document.getElementById('addNewRule')?.classList.add('hidden');
+    const configForm = document.getElementById('configForm');
+    configForm?.classList.remove('hidden');
+    const configFormComponent = configForm?.querySelector('astro-island');
+    if (configFormComponent) {
+      configFormComponent.setAttribute('props', JSON.stringify({ rule, index }));
+    }
+  });
+
+  document.addEventListener('delete', async (event: DeleteEvent) => {
     const { index } = event.detail;
     if (confirm('Are you sure you want to delete this rule?')) {
       currentRules.splice(index, 1);
@@ -149,7 +174,7 @@ document.addEventListener('view', (event) => {
         showMessage('Rule deleted successfully');
         updateRuleModals();
       } catch (error) {
-        showError(error.message);
+        showError(error instanceof Error ? error.message : String(error));
       }
     }
   });
