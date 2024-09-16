@@ -41,8 +41,9 @@ export async function saveConfiguration(config) {
       throw new Error(`Failed to save configuration: ${response.status} ${response.statusText}`);
     }
 
-    console.log('Configuration saved successfully');
-    return true;
+    const result = await response.json();
+    console.log('Save result:', result);
+    return result;
   } catch (error) {
     console.error('Error saving configuration:', error);
     throw error;

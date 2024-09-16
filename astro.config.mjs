@@ -9,12 +9,14 @@ import tailwind from '@astrojs/tailwind';
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-
   adapter: cloudflare({
+    mode: 'directory',
+    functionPerRoute: false,
     platformProxy: {
-      enabled: true
-    }
+      enabled: true,
+    },
   }),
 
-  integrations: [svelte(), tailwind()]
+  integrations: [svelte(), tailwind()],
 });
+

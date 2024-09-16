@@ -1,19 +1,20 @@
 export async function onRequestGet({ env }) {
+  console.log('GET request received for /api/config');
   try {
-    const id = env.CONFIG_STORAGE.idFromName('global');
-    const obj = env.CONFIG_STORAGE.get(id);
-    const response = await obj.fetch('https://rate-limiter-ui/config');
+    const configStorageId = env.CONFIG_STORAGE.idFromName('global');
+    const configStorage = env.CONFIG_STORAGE.get(configStorageId);
+
+    const response = await configStorage.fetch('https://rate-limiter-ui/config');
 
     if (!response.ok) {
       throw new Error(`Durable Object responded with ${response.status}`);
     }
 
-    const config = await response.json();
-    return new Response(JSON.stringify(config), {
+    return new Response(await response.text(), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching config:', error);
+    console.error('Error in onRequestGet:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -21,14 +22,15 @@ export async function onRequestGet({ env }) {
   }
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ env, request }) {
+  console.log('POST request received for /api/config');
   try {
+    const configStorageId = env.CONFIG_STORAGE.idFromName('global');
+    const configStorage = env.CONFIG_STORAGE.get(configStorageId);
+
     const config = await request.json();
-    const id = env.CONFIG_STORAGE.idFromName('global');
-    const obj = env.CONFIG_STORAGE.get(id);
-    const response = await obj.fetch('https://rate-limiter-ui/config', {
+    const response = await configStorage.fetch('https://rate-limiter-ui/config', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
     });
 
@@ -36,12 +38,9 @@ export async function onRequestPost({ request, env }) {
       throw new Error(`Durable Object responded with ${response.status}`);
     }
 
-    return new Response(JSON.stringify({ message: 'Config saved' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response('Config saved', { status: 200 });
   } catch (error) {
-    console.error('Error saving config:', error);
+    console.error('Error in onRequestPost:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
